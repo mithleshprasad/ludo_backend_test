@@ -1,6 +1,6 @@
 const { sessionMiddleware } = require('../configludo/session');
 const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? ['https://manual.a3adda.com', 'https://a3adda.com']
+    ? ['https://manual.a3adda.com', 'https://a3adda.com', 'https://aesthetic-hummingbird-6c9afa.netlify.app']
     : ['http://localhost:3000', 'http://localhost:1620', 'http://localhost:3001'];
 
 const socketManager = {
