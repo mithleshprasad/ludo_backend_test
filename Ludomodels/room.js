@@ -20,7 +20,7 @@ const RoomSchema = new mongoose.Schema({
     Game_status: { type: String, default: 'active' },
     password: String,
     createDate: { type: Date, default: Date.now },
-    GameId : { type: String, default: null },
+    GameId: { type: String, default: null },
     started: { type: Boolean, default: false },
     full: { type: Boolean, default: false },
     nextMoveTime: Number,
@@ -42,19 +42,19 @@ const RoomSchema = new mongoose.Schema({
             for (let i = 0; i < 16; i++) {
                 let pawn = {};
                 if (i < 4) {
-                    pawn.color = COLORS[0];  
+                    pawn.color = COLORS[0];
                     pawn.basePos = i;
                     pawn.position = i;
                 } else if (i < 8) {
-                    pawn.color = COLORS[1]; 
+                    pawn.color = COLORS[1];
                     pawn.basePos = blueStartPosition;
                     pawn.position = blueStartPosition;
                 } else if (i < 12) {
-                    pawn.color = COLORS[2]; 
+                    pawn.color = COLORS[2];
                     pawn.basePos = i;
                     pawn.position = i;
                 } else if (i < 16) {
-                    pawn.color = COLORS[3];  
+                    pawn.color = COLORS[3];
                     pawn.basePos = yelloStartPosition;
                     pawn.position = yelloStartPosition;
                 }
@@ -62,20 +62,19 @@ const RoomSchema = new mongoose.Schema({
             }
             return startPositions;
         },
-        },
+    },
 });
 RoomSchema.methods.beatPawns = function (position, attackingPawnColor) {
     const restrictedPositions = [16, 24, 29, 37, 42, 50, 55, 63];
-    
+
     if (restrictedPositions.includes(position)) {
         return;
     }
     const pawnsOnPosition = this.pawns.filter(pawn => pawn.position === position);
-    let didBeatPawn = false; 
-    
+    let didBeatPawn = false;
     pawnsOnPosition.forEach(pawn => {
         if (pawn.color !== attackingPawnColor) {
-            didBeatPawn = true; 
+            didBeatPawn = true;
             const index = this.getPawnIndex(pawn._id);
             const stepsMoved = Math.abs(this.pawns[index].position - this.pawns[index].basePos);
             const stepsMovedForBluestep1 = Math.abs(65 - this.pawns[index].basePos);
@@ -93,18 +92,18 @@ RoomSchema.methods.beatPawns = function (position, attackingPawnColor) {
                     isInRange
                 ) {
                     player.score = (player.score || 0) - stepsMovedBlue;
-                    console.log(' attackingPawnColor === yellow', stepsMovedBlue);
-                    
+
+
                 } else if (attackingPawnColor === 'blue' && isInRangeYellow) {
                     player.score = (player.score || 0) - stepsMovedBlue;
-                    console.log(' attackingPawnColor === blue', stepsMovedBlue);
+
                 } else {
                     player.score = (player.score || 0) - stepsMoved;
                 }
             }
         }
     });
-    
+
 
     if (didBeatPawn) {
         this.beatPawnBonusTurn = true;
@@ -112,8 +111,6 @@ RoomSchema.methods.beatPawns = function (position, attackingPawnColor) {
 };
 RoomSchema.methods.changeMovingPlayer = function () {
     if (this.winner) return;
-
-
     if (this.beatPawnBonusTurn) {
         this.beatPawnBonusTurn = false;
         this.nextMoveTime = Date.now() + MOVE_TIME;
@@ -122,40 +119,37 @@ RoomSchema.methods.changeMovingPlayer = function () {
         timeoutManager.set(makeRandomMove, MOVE_TIME, this._id.toString());
         return;
     }
-
     const playerIndex = this.players.findIndex(player => player.nowMoving === true);
+ 
     const player = this.players[playerIndex];
 
- if (player) {
-    if (this.rolledNumber === 6) {
-        player.consecutiveSixes = (player.consecutiveSixes || 0) + 1;
+    if (player) {
+        if (this.rolledNumber === 6) {
+            player.consecutiveSixes = (player.consecutiveSixes || 0) + 1;
+        } else {
+            player.consecutiveSixes = 0;
+        }
     } else {
-        player.consecutiveSixes = 0;
+
     }
-} else {
-    console.error('Player is undefined in changeMovingPlayer');
-    // Optionally throw an error or handle it gracefully
-}
 
-
-    if (player.consecutiveSixes === 2) {
+    if (player.consecutiveSixes === 3) {
         if (this.rolledNumber === 6) {
 
             player.nowMoving = false;
             player.consecutiveSixes = 0;
             const nextIndex = (playerIndex + 1) % this.players.length;
             this.players[nextIndex].nowMoving = true;
-        } 
+        }
 
     }
 
-    else if (this.rolledNumber !== 6 || player.consecutiveSixes === 2) {
+    else if (this.rolledNumber !== 6 || player.consecutiveSixes === 3) {
         player.nowMoving = false;
         player.consecutiveSixes = 0;
         const nextIndex = (playerIndex + 1) % this.players.length;
         this.players[nextIndex].nowMoving = true;
     }
-
 
     this.nextMoveTime = Date.now() + MOVE_TIME;
     this.rolledNumber = null;
@@ -196,14 +190,14 @@ RoomSchema.methods.getPawnsThatCanMoveScore = async function () {
     const gameDuration = currentTime - this.startTime;
     const twentyMinutes = 10 * 60 * 1000;
     let saveRequired = false;
-// Convert milliseconds to minutes and seconds
-const minutes = Math.floor(gameDuration / 60000);
-const seconds = Math.floor((gameDuration % 60000) / 1000);
+    // Convert milliseconds to minutes and seconds
+    const minutes = Math.floor(gameDuration / 60000);
+    const seconds = Math.floor((gameDuration % 60000) / 1000);
 
-// Format as MM:SS with leading zeros
-const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // Format as MM:SS with leading zeros
+    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-console.log("gameDuration", formattedTime);
+ 
 
     if (gameDuration >= twentyMinutes) {
         let maxScore = -1;
@@ -217,8 +211,8 @@ console.log("gameDuration", formattedTime);
         });
 
         if (winningPlayer) {
-            this.endGame(winningPlayer.color); 
-            return; 
+            this.endGame(winningPlayer.color);
+            return;
         }
     }
 
@@ -251,7 +245,7 @@ RoomSchema.methods.canStartGame = function () {
 RoomSchema.methods.startGame = function () {
     this.started = true;
     this.startTime = Date.now();
-    this.endTime = this.startTime + 10 * 60 * 1000; 
+    this.endTime = this.startTime + 10 * 60 * 1000;
     this.nextMoveTime = Date.now() + MOVE_TIME;
     this.players.forEach(player => (player.ready = true));
     this.players[0].nowMoving = true;
@@ -310,14 +304,14 @@ RoomSchema.methods.addPlayer = function (name, id) {
     const playerCount = this.players.length;
     let color;
 
-    
+
 
     if (playerCount === 0) {
-        color = 'red'; 
+        color = 'red';
     } else if (playerCount === 1) {
         color = 'green';
     } else {
-        color = COLORS[playerCount]; 
+        color = COLORS[playerCount];
     }
 
     this.players.push({
@@ -327,7 +321,7 @@ RoomSchema.methods.addPlayer = function (name, id) {
         color: color,
     });
 
-    this.isFull(); 
+    this.isFull();
 };
 
 
