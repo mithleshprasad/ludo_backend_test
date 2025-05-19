@@ -39,7 +39,8 @@ module.exports = socket => {
     const handleRollDice = async () => {
         const room = await getRoom(req.session.roomId);
         const player = room.getPlayer(req.session.playerId);
-     
+     const currentPlayer = room?.players?.find(player => player.nowMoving === true);
+ 
         const positionsArray = room.pawns
     .filter(pawn => pawn.color === player.color)
     .map(pawn => {
@@ -50,7 +51,7 @@ module.exports = socket => {
         return pawn.position;
     })
     .sort((a, b) => a - b);
-            console.log(`Positions for ${player.color} pawns:`, positionsArray);
+          
         const positionDifferences = new Set();
         for (let i = 0; i < positionsArray.length; i++) {
             for (let j = i + 1; j < positionsArray.length; j++) {
@@ -60,15 +61,15 @@ module.exports = socket => {
                 }
             }
         }
-        console.log(`Position differences for ${player.color} pawns:`, Array.from(positionDifferences));
+        
     
         let rolledNumber;
         do {
             rolledNumber = Math.floor(Math.random() * 6) + 1;
+            if (currentPlayer.consecutiveSixes === 1 && rolledNumber === 6) {
+            continue;
+              }
         } while (positionDifferences.has(rolledNumber)); 
-    
-        console.log(`${req.session.color} rolled ${rolledNumber}`);
-    
      
         sendToPlayersRolledNumber(req.session.roomId, rolledNumber);
         // sendToPlayersRolledNumber(req.session.roomId, 6);
