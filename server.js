@@ -21,7 +21,7 @@ app.use(express.json());
 app.set('trust proxy', 1);
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? ['https://manual.a3adda.com', 'https://a3adda.com', 'https://aesthetic-hummingbird-6c9afa.netlify.app']
+    ? ['https://manual.a3adda.com', 'https://a3adda.com', 'https://aesthetic-hummingbird-6c9afa.netlify.app','https://ludomith.netlify.app']
     : ['http://localhost:3000', 'http://localhost:1620', 'http://localhost:3001'];
 
 app.use(
